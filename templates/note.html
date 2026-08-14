@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — CodeVault{% endblock %}
+{% block meta_description %}Secure encrypted note on CodeVault.{% endblock %}
+
+{% block content %}
+<div class="note-page" id="notePage" data-note-id="{{ note_id }}" data-is-protected="{{ 'true' if is_protected else 'false' }}">
+
+  <!-- ── Password Gate ── -->
+  <div class="password-gate" id="passwordGate" style="display:none;">
+    <div class="gate-card">
+      <div class="gate-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h2>This note is protected</h2>
+      <p>Enter the password to unlock this note.</p>
+      <div class="input-group gate-input-group">
+        <input type="password" id="gatePassword" class="input" placeholder="Enter password..." />
+        <button class="btn btn-primary" id="gateUnlockBtn">
+          Unlock
+        </button>
+      </div>
+      <p class="gate-error" id="gateError"></p>
+    </div>
+  </div>
+
+  <!-- ── Note Toolbar ── -->
+  <div class="note-toolbar" id="noteToolbar">
+    <div class="toolbar-left">
+      <input type="text" id="noteTitle" class="note-title-input" placeholder="Untitled Note" maxlength="200" />
+    </div>
+    <div class="toolbar-right">
+      <!-- Language selector -->
+      <select id="languageSelect" class="input select select-sm toolbar-select" title="Syntax language">
+        <option value="plaintext">Plain Text</option>
+        <option value="markdown">Markdown</option>
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="java">Java</option>
+        <option value="clike">C / C++</option>
+        <option value="xml">HTML / XML</option>
+        <option value="css">CSS</option>
+        <option value="sql">SQL</option>
+      </select>
+
+      <!-- Markdown preview toggle -->
+      <button class="btn btn-ghost btn-sm toolbar-btn" id="previewToggle" title="Toggle preview">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Preview
+      </button>
+
+      <!-- Files button -->
+      <button class="btn btn-ghost btn-sm toolbar-btn" id="filesToggle" title="Attachments">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        Files <span class="file-badge" id="fileBadge" style="display:none">0</span>
+      </button>
+
+      <!-- History button -->
+      <button class="btn btn-ghost btn-sm toolbar-btn" id="historyToggle" title="Revision history">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
+        History
+      </button>
+
+      <!-- Save button -->
+      <button class="btn btn-success btn-sm" id="saveBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save
+      </button>
+
+      <!-- Save and Close button -->
+      <button class="btn btn-primary btn-sm" id="saveCloseBtn" title="Save and return to home">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save & Close
+      </button>
+
+      <!-- Share button -->
+      <button class="btn btn-ghost btn-sm toolbar-btn" id="shareBtn" title="Copy link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </button>
+
+      <!-- Delete button -->
+      <button class="btn btn-danger btn-sm" id="deleteBtn" title="Delete note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Editor / Preview Area ── -->
+  <div class="editor-wrapper" id="editorWrapper">
+    <!-- Text Area (CodeMirror mounts here) -->
+    <textarea id="noteEditor" class="note-editor"></textarea>
+
+    <!-- Markdown Preview Pane -->
+    <div class="preview-pane" id="previewPane" style="display:none;"></div>
+  </div>
+
+  <!-- ── Files Panel ── -->
+  <div class="files-panel" id="filesPanel" style="display:none;">
+    <div class="panel-header">
+      <h3>Attachments</h3>
+      <button class="modal-close" id="closeFilesPanel">&times;</button>
+    </div>
+
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" multiple style="display:none;" />
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <p>Drop files here or <button class="link-btn" id="browseBtn">browse</button></p>
+      <span class="upload-hint">Max 20MB per file · Up to 10 files</span>
+    </div>
+
+    <div class="upload-progress" id="uploadProgress" style="display:none;">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <span id="uploadStatus">Uploading...</span>
+    </div>
+
+    <div class="files-list" id="filesList"></div>
+  </div>
+
+  <!-- ── History Panel ── -->
+  <div class="history-panel" id="historyPanel" style="display:none;">
+    <div class="panel-header">
+      <h3>Revision History</h3>
+      <button class="modal-close" id="closeHistoryPanel">&times;</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="loading-spinner">
+        <svg class="spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" opacity="0.75"/></svg>
+        Loading...
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Status Bar ── -->
+  <div class="status-bar" id="statusBar">
+    <div class="status-left">
+      <span id="statusLang">Plain Text</span>
+      <span class="status-sep">·</span>
+      <span id="statusChars">0 chars</span>
+      <span class="status-sep">·</span>
+      <span id="statusViews">0 views</span>
+    </div>
+    <div class="status-right">
+      <span id="statusSaved" class="status-saved">All changes saved</span>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/note.js') }}"></script>
+{% endblock %}

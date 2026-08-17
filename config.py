@@ -25,7 +25,15 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
     SESSION_COOKIE_SAMESITE = 'Lax'
 
+    # Fallback to local upload if S3 not fully configured, though not needed for Render.
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
+    
+    # ── Cloudflare R2 / S3 Configuration ─────────────────────────
+    S3_BUCKET = os.environ.get('S3_BUCKET')
+    S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
+    S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY')
+    S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY')
+
     MAX_CONTENT_LENGTH = 20 * 1024 * 1024  # 20 MB limit
 
     ALLOWED_EXTENSIONS = {

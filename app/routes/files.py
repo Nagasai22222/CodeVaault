@@ -1,7 +1,8 @@
 import os
 import uuid
 import mimetypes
-from flask import Blueprint, request, jsonify, send_from_directory, current_app
+import boto3
+from flask import Blueprint, request, jsonify, send_from_directory, current_app, redirect
 from werkzeug.utils import secure_filename
 from app import db
 from app.models import Note, FileAttachment
@@ -9,6 +10,15 @@ from app.utils import allowed_file
 
 files_bp = Blueprint('files', __name__)
 
+def get_s3_client():
+    if not current_app.config.get('S3_BUCKET'):
+        return None
+    return boto3.client(
+        's3',
+        endpoint_url=current_app.config.get('S3_ENDPOINT_URL'),
+        aws_access_key_id=current_app.config.get('S3_ACCESS_KEY'),
+        aws_secret_access_key=current_app.config.get('S3_SECRET_KEY')
+    )
 
 def _check_password(note, provided_password):
     import bcrypt
@@ -49,13 +59,28 @@ def upload_file(note_id):
     ext = original_name.rsplit('.', 1)[1].lower() if '.' in original_name else ''
     stored_name = f"{uuid.uuid4().hex}.{ext}" if ext else uuid.uuid4().hex
 
-    upload_folder = current_app.config['UPLOAD_FOLDER']
-    save_path = os.path.join(upload_folder, stored_name)
-    file.save(save_path)
-
-    file_size = os.path.getsize(save_path)
+    file.seek(0, os.SEEK_END)
+    file_size = file.tell()
+    file.seek(0)
     mime_type, _ = mimetypes.guess_type(original_name)
     mime_type = mime_type or 'application/octet-stream'
+
+    s3_client = get_s3_client()
+    bucket_name = current_app.config.get('S3_BUCKET')
+
+    if s3_client and bucket_name:
+        s3_client.upload_fileobj(
+            file,
+            bucket_name,
+            stored_name,
+            ExtraArgs={'ContentType': mime_type}
+        )
+    else:
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+        save_path = os.path.join(upload_folder, stored_name)
+        file.save(save_path)
 
     attachment = FileAttachment(
         note_id=note.id,
@@ -91,13 +116,28 @@ def download_file(file_id):
     if note.is_password_protected and not _check_password(note, password):
         return jsonify({'error': 'Password required'}), 401
 
-    upload_folder = current_app.config['UPLOAD_FOLDER']
-    return send_from_directory(
-        upload_folder,
-        attachment.stored_name,
-        as_attachment=True,
-        download_name=attachment.filename,
-    )
+    s3_client = get_s3_client()
+    bucket_name = current_app.config.get('S3_BUCKET')
+
+    if s3_client and bucket_name:
+        url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': bucket_name,
+                'Key': attachment.stored_name,
+                'ResponseContentDisposition': f'attachment; filename="{attachment.filename}"'
+            },
+            ExpiresIn=3600
+        )
+        return redirect(url)
+    else:
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        return send_from_directory(
+            upload_folder,
+            attachment.stored_name,
+            as_attachment=True,
+            download_name=attachment.filename,
+        )
 
 
 # ── Preview File (inline for images) ─────────────────────────────────────────
@@ -110,12 +150,27 @@ def preview_file(file_id):
     if note.is_password_protected and not _check_password(note, password):
         return jsonify({'error': 'Password required'}), 401
 
-    upload_folder = current_app.config['UPLOAD_FOLDER']
-    return send_from_directory(
-        upload_folder,
-        attachment.stored_name,
-        as_attachment=False,
-    )
+    s3_client = get_s3_client()
+    bucket_name = current_app.config.get('S3_BUCKET')
+
+    if s3_client and bucket_name:
+        url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': bucket_name,
+                'Key': attachment.stored_name,
+                'ResponseContentDisposition': 'inline'
+            },
+            ExpiresIn=3600
+        )
+        return redirect(url)
+    else:
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        return send_from_directory(
+            upload_folder,
+            attachment.stored_name,
+            as_attachment=False,
+        )
 
 
 # ── Delete File ───────────────────────────────────────────────────────────────
@@ -129,10 +184,19 @@ def delete_file(file_id):
     if note.is_password_protected and not _check_password(note, password):
         return jsonify({'error': 'Invalid password'}), 401
 
-    upload_folder = current_app.config['UPLOAD_FOLDER']
-    fpath = os.path.join(upload_folder, attachment.stored_name)
-    if os.path.exists(fpath):
-        os.remove(fpath)
+    s3_client = get_s3_client()
+    bucket_name = current_app.config.get('S3_BUCKET')
+
+    if s3_client and bucket_name:
+        try:
+            s3_client.delete_object(Bucket=bucket_name, Key=attachment.stored_name)
+        except Exception as e:
+            print(f"Error deleting from S3: {e}")
+    else:
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        fpath = os.path.join(upload_folder, attachment.stored_name)
+        if os.path.exists(fpath):
+            os.remove(fpath)
 
     db.session.delete(attachment)
     db.session.commit()

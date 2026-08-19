@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: codevault
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    # Gunicorn handles the web server, 'run:app' refers to app object in run.py
+    startCommand: "gunicorn run:app"
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SITE_PASSWORD
+        value: "your-secure-site-password-here"
+      
+      # ── Supabase PostgreSQL Database ──
+      - key: DATABASE_URL
+        sync: false
+
+      # ── Cloudflare R2 Storage ──
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false

@@ -13,11 +13,14 @@ files_bp = Blueprint('files', __name__)
 def get_s3_client():
     if not current_app.config.get('S3_BUCKET'):
         return None
+    from botocore.client import Config
     return boto3.client(
         's3',
         endpoint_url=current_app.config.get('S3_ENDPOINT_URL'),
         aws_access_key_id=current_app.config.get('S3_ACCESS_KEY'),
-        aws_secret_access_key=current_app.config.get('S3_SECRET_KEY')
+        aws_secret_access_key=current_app.config.get('S3_SECRET_KEY'),
+        config=Config(signature_version='s3v4'),
+        region_name='auto'
     )
 
 def _check_password(note, provided_password):

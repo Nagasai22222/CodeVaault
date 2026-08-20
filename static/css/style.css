@@ -34,6 +34,15 @@
   --gradient-soft:    linear-gradient(135deg, rgba(0,229,255,0.15) 0%, rgba(59,130,246,0.15) 100%);
   --shadow-glow: 0 0 40px rgba(0,229,255,0.4);
   --thor-armor: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --navbar-h: 60px;
+  --toolbar-h: 52px;
+  --statusbar-h: 32px;
 }
 
 body.theme-zenitsu {
@@ -80,19 +89,6 @@ body:not(.theme-zenitsu) .logo-icon {
   background: var(--thor-armor) !important;
   border: 1px solid #00e5ff;
   box-shadow: 0 0 10px rgba(0,229,255,0.5);
-}
-
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-
-  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
-
-  --navbar-h: 60px;
-  --toolbar-h: 52px;
-  --statusbar-h: 32px;
 }
 
 [data-theme="light"] {

@@ -4,7 +4,7 @@ services:
     env: python
     buildCommand: "pip install -r requirements.txt"
     # Gunicorn handles the web server, 'run:app' refers to app object in run.py
-    startCommand: "gunicorn run:app"
+    startCommand: "gunicorn run:app --workers 2 --threads 4 --timeout 60"
     envVars:
       - key: FLASK_ENV
         value: production

@@ -17,7 +17,7 @@ def google_verification():
 
 @pages_bp.route('/robots.txt')
 def robots():
-    response = make_response("User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://codevault-m7er.onrender.com/sitemap.xml")
+    response = make_response("User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://codevaultsai.com/sitemap.xml")
     response.headers["Content-Type"] = "text/plain"
     return response
 
@@ -27,7 +27,7 @@ def sitemap():
     sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://codevault-m7er.onrender.com/</loc>
+        <loc>https://codevaultsai.com/</loc>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>

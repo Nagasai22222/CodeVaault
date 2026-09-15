@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}CodeVault — Enter Your Code{% endblock %}
+{% block title %}Code Vault | Secure CodeVault Workspace by CodedPad{% endblock %}
 
 {% block content %}
 <section class="vault-entry">
@@ -23,9 +23,9 @@
       <button class="btn btn-ghost" id="tabAccess" style="flex:1;">Access Data</button>
     </div>
 
-    <h1 class="vault-heading" id="entryHeading">Create <span class="gradient-text">New Vault</span></h1>
+    <h1 class="vault-heading" id="entryHeading">Create <span class="gradient-text">New Code Vault</span></h1>
     <p class="vault-sub" id="entrySub">
-      Choose a unique code to create a brand new encrypted workspace.
+      Choose a unique code to create a brand new encrypted CodeVault workspace. Store code and files securely on CodedPad.
     </p>
 
     <div class="code-entry-form" id="codeEntryForm">
@@ -147,8 +147,8 @@
     document.body.classList.remove('theme-zenitsu'); // Engage Tanjiro Theme
     tabCreate.className = 'btn btn-primary';
     tabAccess.className = 'btn btn-ghost';
-    entryHeading.innerHTML = 'Create <span class="gradient-text">New Data</span>';
-    entrySub.textContent = 'Choose a unique code to create a brand new encrypted workspace.';
+    entryHeading.innerHTML = 'Create <span class="gradient-text">New Code Vault</span>';
+    entrySub.textContent = 'Choose a unique code to create a brand new encrypted CodeVault workspace. Store code and files securely on CodedPad.';
     btnText.textContent = 'Create Vault';
     hideError(codeError);
     codeInput.focus();
@@ -159,8 +159,8 @@
     document.body.classList.add('theme-zenitsu'); // Engage Zenitsu Theme
     tabAccess.className = 'btn btn-primary';
     tabCreate.className = 'btn btn-ghost';
-    entryHeading.innerHTML = 'Access <span class="gradient-text">Existing Data</span>';
-    entrySub.textContent = 'Enter your specific code to gain access to your existing vault.';
+    entryHeading.innerHTML = 'Access <span class="gradient-text">Existing Code Vault</span>';
+    entrySub.textContent = 'Enter your specific code to gain access to your existing encrypted CodeVault.';
     btnText.textContent = 'Open Vault';
     hideError(codeError);
     codeInput.focus();
